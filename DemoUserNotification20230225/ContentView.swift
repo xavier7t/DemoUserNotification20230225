@@ -6,16 +6,14 @@
 //
 
 import SwiftUI
-
+import UserNotifications
 struct ContentView: View {
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundColor(.accentColor)
-            Text("Hello, world!")
+            Button("Tap me to activate notification") {
+                scheduleNotification(title: "1 new message", subtitle: "The meeting tomorrow is rescheduled...", secondsLater: 5, isRepeating: false)
+            }
         }
-        .padding()
     }
 }
 
@@ -23,4 +21,27 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
     }
+}
+
+func scheduleNotification(title: String, subtitle: String, secondsLater: TimeInterval, isRepeating: Bool) {
+    //Request Access
+    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, error in
+        if let error {
+            print("Notification access not granted.", error.localizedDescription)
+        }
+    }
+    //Define the content
+    let content = UNMutableNotificationContent()
+    content.title = title
+    content.subtitle = subtitle
+    content.sound = .default
+    
+    //Define the trigger
+    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: secondsLater, repeats: isRepeating)
+    
+    //Define the request
+    let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+    
+    //Add request to notication center of the current app
+    UNUserNotificationCenter.current().add(request)
 }
